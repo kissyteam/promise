@@ -1,6 +1,6 @@
 {
   "name": "modulex-promise",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "yiminghe <yiminghe@gmail.com>",
   "engines": {
     "node": "~0.11"
@@ -8,7 +8,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "http://github.com/kissyteam/event-custom.git"
+    "url": "http://github.com/kissyteam/promise.git"
   },
   "testling": {
     "server": "server.js",
