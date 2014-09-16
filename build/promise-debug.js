@@ -13,9 +13,11 @@ _promise_ = function (exports) {
    */
   var PROMISE_VALUE = '__promise_value', PROMISE_PROGRESS_LISTENERS = '__promise_progress_listeners', PROMISE_PENDINGS = '__promise_pendings';
   function each(arr, fn) {
-    for (var i = 0, l = arr.length; i < l; i++) {
-      if (fn(arr[i], i) === false) {
-        break;
+    if (arr) {
+      for (var i = 0, l = arr.length; i < l; i++) {
+        if (fn(arr[i], i) === false) {
+          break;
+        }
       }
     }
   }
@@ -329,7 +331,7 @@ _promise_ = function (exports) {
   }
   Promise.Defer = Defer;
   mix(Promise, {
-    version: '1.0.0',
+    version: '1.0.1',
     /**
      * register callbacks when obj as a promise is resolved
      * or call fulfilled callback directly when obj is not a promise object
