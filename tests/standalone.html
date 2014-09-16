@@ -1,0 +1,11 @@
+<script src="../build/promise-standalone-debug.js"></script>
+<script>
+    (function (Promise) {
+        var defer = Promise.Defer();
+        defer.promise.then(function (v) {
+            alert(v);
+        });
+        defer.resolve(1);
+        defer.resolve(2);
+    })(XPromise);
+</script>
