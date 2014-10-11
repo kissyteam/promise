@@ -1,6 +1,6 @@
 # promise
 
-promise/A+ implementation
+ES6-compatible promise library. Promise/A+ implementation.
 
 [![promise](https://nodei.co/npm/modulex-promise.png)](https://npmjs.org/package/modulex-promise)
 [![NPM downloads](http://img.shields.io/npm/dm/modulex-promise.svg)](https://npmjs.org/package/modulex-promise)
@@ -17,12 +17,15 @@ promise/A+ implementation
 ### nodejs
 ```javascript
 var Promise = require('modulex-promise');
-var defer = Promise.Defer();
-defer.promise.then(function (v) {
-    alert(v);
+readFilePromisified('config.json')
+.then(function (text) { // (A)
+    var obj = JSON.parse(text);
+    console.log(JSON.stringify(obj, null, 4));
+})
+.catch(function (reason) { // (B)
+    // File read error or JSON SyntaxError
+    console.error('An error occurred', reason);
 });
-defer.resolve(1);
-defer.resolve(2);
 ```
 
 ### standalone
@@ -30,12 +33,35 @@ defer.resolve(2);
 <script src="build/promise-standalone-debug.js"></script>
 <script>
     (function (Promise) {
-        var defer = Promise.Defer();
-        defer.promise.then(function (v) {
-            alert(v);
-        });
-        defer.resolve(1);
-        defer.resolve(2);
+        function httpGet(url) {
+            return new Promise(
+                function (resolve, reject) {
+                    var request = new XMLHttpRequest();
+                    request.onreadystatechange = function () {
+                        if (this.status === 200) {
+                            // Success
+                            resolve(this.response);
+                        } else {
+                            // Something went wrong (404 etc.)
+                            reject(new Error(this.statusText));
+                        }
+                    }
+                    request.onerror = function () {
+                        reject(new Error(
+                            'XMLHttpRequest Error: '+this.statusText));
+                    };
+                    request.open('GET', url);
+                    request.send();
+                });
+        }
+        httpGet('http://example.com/file.txt')
+        .then(
+            function (value) {
+                console.log('Contents: ' + value);
+            },
+            function (reason) {
+                console.error('Something went wrong', reason);
+            });
     })(XPromise);
 </script>
 ```

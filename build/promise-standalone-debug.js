@@ -13,7 +13,13 @@ __promise__ = function (exports) {
      * implement Promise specification by KISSY
      * @author yiminghe@gmail.com
      */
-    var PROMISE_VALUE = '__promise_value', PROMISE_PROGRESS_LISTENERS = '__promise_progress_listeners', PROMISE_PENDINGS = '__promise_pendings';
+    var PROMISE_VALUE = '__promise_value';
+    var PROMISE_STATUS = '__promise_status';
+    var PROMISE_PROGRESS_LISTENERS = '__promise_progress_listeners';
+    var PROMISE_PENDINGS = '__promise_pendings';
+    var PENDING = 'Pending';
+    var FULFILLED = 'Fulfilled';
+    var REJECTED = 'Rejected';
     function each(arr, fn) {
       if (arr) {
         for (var i = 0, l = arr.length; i < l; i++) {
@@ -28,6 +34,9 @@ __promise__ = function (exports) {
         r[p] = s[p];
       }
     }
+    function isThenable(v) {
+      return v && typeof v.then === 'function';
+    }
     /*
      two effects:
      1. call fulfilled with immediate value
@@ -37,22 +46,23 @@ __promise__ = function (exports) {
       // simply call rejected
       if (promise instanceof Reject) {
         // if there is a rejected , should always has! see when()
-        rejected.call(promise, promise[PROMISE_VALUE]);
+        rejected.call(promise, promise.reason);
+      } else if (!(promise instanceof Promise) && isThenable(promise)) {
+        // flatten
+        promise.then(fulfilled, rejected);
       } else {
-        var v = promise[PROMISE_VALUE], pendings = promise[PROMISE_PENDINGS];
-        if (pendings === undefined) {
-          pendings = promise[PROMISE_PENDINGS] = [];
+        var v = promise[PROMISE_VALUE];
+        if (isThenable(v) || v instanceof Reject) {
+          // rejected or nested promise
+          promiseWhen(v, fulfilled, rejected);
+          return;
         }
-        // unresolved
-        // pushed to pending list
-        if (pendings) {
-          pendings.push([
+        if (promise[PROMISE_STATUS] === PENDING) {
+          // flatten
+          promise[PROMISE_PENDINGS].push([
             fulfilled,
             rejected
           ]);
-        } else if (isPromise(v)) {
-          // rejected or nested promise
-          promiseWhen(v, fulfilled, rejected);
         } else {
           // fulfilled value
           // normal value represents ok
@@ -91,20 +101,21 @@ __promise__ = function (exports) {
        * @return {Promise} defer object's promise
        */
       resolve: function (value) {
-        var promise = this.promise, pendings;
-        if ((pendings = promise[PROMISE_PENDINGS]) === false) {
+        var promise = this.promise;
+        if (promise[PROMISE_STATUS] !== PENDING) {
           return null;
         }
+        promise[PROMISE_STATUS] = FULFILLED;
         // set current promise 's resolved value
         // maybe a promise or instant value
         promise[PROMISE_VALUE] = value;
-        pendings = pendings ? [].concat(pendings) : [];
-        promise[PROMISE_PENDINGS] = false;
-        promise[PROMISE_PROGRESS_LISTENERS] = false;
+        var pendings = promise[PROMISE_PENDINGS];
         each(pendings, function (p) {
           promiseWhen(promise, p[0], p[1]);
         });
-        return value;
+        promise[PROMISE_PENDINGS] = [];
+        promise[PROMISE_PROGRESS_LISTENERS] = [];
+        return this.promise;
       },
       /**
        * reject defer object's promise
@@ -112,13 +123,18 @@ __promise__ = function (exports) {
        * @return {Promise} defer object's promise
        */
       reject: function (reason) {
-        return this.resolve(new Reject(reason));
+        this.resolve(new Reject(reason));
+        this.promise[PROMISE_STATUS] = REJECTED;
+        return this.promise;
       },
       /**
        * notify promise 's progress listeners
        * @param message
        */
       notify: function (message) {
+        if (this.promise[PROMISE_STATUS] !== PENDING) {
+          return null;
+        }
         each(this.promise[PROMISE_PROGRESS_LISTENERS], function (listener) {
           listener(message);
         });
@@ -141,7 +157,12 @@ __promise__ = function (exports) {
      */
     function Promise(v) {
       var self = this;
-      if (typeof v === 'function') {
+      self[PROMISE_PENDINGS] = [];
+      self[PROMISE_PROGRESS_LISTENERS] = [];
+      if (!v) {
+        self[PROMISE_STATUS] = PENDING;
+      } else if (typeof v === 'function') {
+        self[PROMISE_STATUS] = PENDING;
         var defer = new Defer(self);
         var resolve = bind(defer.resolve, defer);
         var reject = bind(defer.reject, defer);
@@ -151,6 +172,8 @@ __promise__ = function (exports) {
           console.error(e.stack || e);
           reject(e);
         }
+      } else {
+        self[PROMISE_STATUS] = FULFILLED;
       }
     }
     Promise.prototype = {
@@ -176,7 +199,7 @@ __promise__ = function (exports) {
        */
       progress: function (progressListener) {
         var self = this, listeners = self[PROMISE_PROGRESS_LISTENERS];
-        if (listeners === false) {
+        if (self[PROMISE_STATUS] !== PENDING) {
           return self;
         }
         if (!listeners) {
@@ -191,7 +214,7 @@ __promise__ = function (exports) {
        * @return {Promise} a new promise object
        */
       fail: function (rejected) {
-        return when(this, 0, rejected);
+        return this.then(0, rejected);
       },
       /**
        * call callback when this promise object is rejected or resolved
@@ -200,7 +223,7 @@ __promise__ = function (exports) {
        * @@return {Promise} a new promise object
        */
       fin: function (callback) {
-        return when(this, function (value) {
+        return this.then(function (value) {
           return callback(value, true);
         }, function (reason) {
           return callback(reason, false);
@@ -258,17 +281,8 @@ __promise__ = function (exports) {
       if (reason instanceof Reject) {
         return reason;
       }
-      var self = this;
-      self[PROMISE_VALUE] = reason;
-      self[PROMISE_PENDINGS] = false;
-      self[PROMISE_PROGRESS_LISTENERS] = false;
-      return self;
+      this.reason = reason;
     }
-    function Noop() {
-    }
-    Noop.prototype = Promise.prototype;
-    Reject.prototype = new Noop();
-    Reject.prototype.constructor = Reject;
     // wrap for promiseWhen
     function when(value, fulfilled, rejected) {
       var defer = new Defer(), done = 0;
@@ -303,7 +317,7 @@ __promise__ = function (exports) {
         done = 1;
         defer.resolve(_fulfilled.call(this, value));
       }
-      if (value instanceof Promise) {
+      if (isThenable(value)) {
         promiseWhen(value, finalFulfill, function (reason) {
           if (done) {
             return;
@@ -321,18 +335,16 @@ __promise__ = function (exports) {
     }
     function isResolved(obj) {
       // exclude Reject at first
-      return obj && !isRejected(obj) && obj[PROMISE_PENDINGS] === false && (!isPromise(obj[PROMISE_VALUE]) || // resolved with a resolved promise !!! :)
-      // Reject.__promise_value is string
-      isResolved(obj[PROMISE_VALUE]));
+      return obj && obj[PROMISE_STATUS] === FULFILLED;
     }
     function isRejected(obj) {
       // implicit by obj[PROMISE_VALUE]
       // isPromise(obj) &&
-      return obj && (obj instanceof Reject || obj[PROMISE_VALUE] instanceof Reject);
+      return obj && obj[PROMISE_STATUS] === REJECTED;
     }
     Promise.Defer = Defer;
     mix(Promise, {
-      version: '1.0.1',
+      version: '1.1.0',
       /**
        * register callbacks when obj as a promise is resolved
        * or call fulfilled callback directly when obj is not a promise object
@@ -346,7 +358,7 @@ __promise__ = function (exports) {
        * for example:
        *      @example
        *      function check(p) {
-               *          S.Promise.when(p, function(v){
+               *          Promise.when(p, function(v){
                *              alert(v === 1);
                *          });
                *      }
@@ -372,21 +384,27 @@ __promise__ = function (exports) {
         if (obj instanceof Promise) {
           return obj;
         }
-        return when(obj);
+        return new Promise(function (resolve) {
+          resolve(obj);
+        });
       },
       /**
        * Make a promise that fulfills to obj.
        */
       resolve: function (obj) {
-        return when(obj);
+        return new Promise(function (resolve) {
+          resolve(obj);
+        });
       },
       /**
        * Make a promise that rejects to obj. For consistency and debugging (e.g. stack traces), obj should be an instanceof Error.
-       * @param obj
+       * @param reason
        * @returns {Promise.Reject}
        */
-      reject: function (obj) {
-        return new Reject(obj);
+      reject: function (reason) {
+        return new Promise(function (resolve, reject) {
+          reject(reason);
+        });
       },
       /**
        * whether the given object is a promise
@@ -458,12 +476,7 @@ __promise__ = function (exports) {
           var generator = generatorFunc.apply(this, arguments);
           function doAction(action, arg) {
             var result;
-            // in case error on first
-            try {
-              result = generator[action](arg);
-            } catch (e) {
-              return new Reject(e);
-            }
+            result = generator[action](arg);
             if (result.done) {
               return result.value;
             }
@@ -475,7 +488,11 @@ __promise__ = function (exports) {
           function throwEx(e) {
             return doAction('throw', e);
           }
-          return next();
+          try {
+            return next();
+          } catch (e) {
+            return Promise.reject(e);
+          }
         };
       }
     });

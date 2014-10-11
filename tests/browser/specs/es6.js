@@ -116,4 +116,21 @@ describe('es6 promise', function () {
             done();
         });
     });
+
+    if (window.Promise) {
+        describe('native promise', function () {
+            it('can interoperate with native promise', function (done) {
+                var n;
+                var p = new Promise(function (resolve) {
+                    resolve(n = new window.Promise(function (resolve) {
+                        resolve(1);
+                    }));
+                });
+                p.then(function (v) {
+                    expect(v).to.be(1);
+                    done();
+                });
+            });
+        });
+    }
 });
