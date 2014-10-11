@@ -105,7 +105,7 @@ __promise__ = function (exports) {
         if (promise[PROMISE_STATUS] !== PENDING) {
           return null;
         }
-        promise[PROMISE_STATUS] = FULFILLED;
+        promise[PROMISE_STATUS] = value instanceof Reject ? REJECTED : FULFILLED;
         // set current promise 's resolved value
         // maybe a promise or instant value
         promise[PROMISE_VALUE] = value;
@@ -123,9 +123,7 @@ __promise__ = function (exports) {
        * @return {Promise} defer object's promise
        */
       reject: function (reason) {
-        this.resolve(new Reject(reason));
-        this.promise[PROMISE_STATUS] = REJECTED;
-        return this.promise;
+        return this.resolve(new Reject(reason));
       },
       /**
        * notify promise 's progress listeners
@@ -344,7 +342,7 @@ __promise__ = function (exports) {
     }
     Promise.Defer = Defer;
     mix(Promise, {
-      version: '1.1.0',
+      version: '1.1.1',
       /**
        * register callbacks when obj as a promise is resolved
        * or call fulfilled callback directly when obj is not a promise object
