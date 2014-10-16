@@ -1,5 +1,10 @@
 var XPromise = (function(){ var module = {};
 
+/*
+Copyright 2014, modulex-promise@1.1.2
+MIT Licensed
+build time: Thu, 16 Oct 2014 06:36:42 GMT
+*/
 var __promise__;
 __promise__ = function (exports) {
   /*
@@ -342,7 +347,7 @@ __promise__ = function (exports) {
     }
     Promise.Defer = Defer;
     mix(Promise, {
-      version: '1.1.1',
+      version: '1.1.2',
       /**
        * register callbacks when obj as a promise is resolved
        * or call fulfilled callback directly when obj is not a promise object
