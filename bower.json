@@ -6,7 +6,7 @@
         "type": "git",
         "url": "http://github.com/kissyteam/promise.git"
     },
-    "dependencies": {
+    "devDependencies": {
         "modulex": "*"
     },
     "ignore": [
