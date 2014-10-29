@@ -73,6 +73,11 @@ gulp.task('tag', function (done) {
     cp.exec('git tag ' + version + ' | git push origin ' + version + ':' + version + ' | git push origin master:master', done);
 });
 
+gulp.task('mx', function () {
+    var aggregateBower = require('aggregate-bower');
+    aggregateBower('bower_components/', 'mx_modules/');
+});
+
 gulp.task('build-standalone', ['build'], function () {
     return gulp.src('./build/promise-debug.js')
         .pipe(kclean({
