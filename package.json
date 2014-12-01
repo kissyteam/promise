@@ -59,6 +59,9 @@
   "precommit": [
     "lint"
   ],
+  "spm":{
+    "main": "lib/promise.js"
+  },
   "scripts": {
     "start": "node --harmony server",
     "publish": "gulp tag",
