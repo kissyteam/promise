@@ -1,9 +1,9 @@
 /*
-Copyright 2014, modulex-promise@1.1.2
+Copyright 2014, modulex-promise@1.1.3
 MIT Licensed
-build time: Thu, 16 Oct 2014 06:36:42 GMT
+build time: Mon, 29 Dec 2014 10:16:57 GMT
 */
-modulex.add("promise", [], function(require, exports, module) {
+define("promise", [], function(require, exports, module) {
 
 /*
 combined modules:
@@ -13,7 +13,7 @@ var _promise_;
 _promise_ = function (exports) {
   /**
    * @ignore
-   * implement Promise specification by KISSY
+   * implement Promise specification
    * @author yiminghe@gmail.com
    */
   var PROMISE_VALUE = '__promise_value';
@@ -345,7 +345,7 @@ _promise_ = function (exports) {
   }
   Promise.Defer = Defer;
   mix(Promise, {
-    version: '1.1.2',
+    version: '1.1.3',
     /**
      * register callbacks when obj as a promise is resolved
      * or call fulfilled callback directly when obj is not a promise object

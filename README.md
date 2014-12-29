@@ -1,16 +1,19 @@
 # promise
+---
 
 ES6-compatible promise library. Promise/A+ implementation.
 
 [![promise](https://nodei.co/npm/modulex-promise.png)](https://npmjs.org/package/modulex-promise)
+[![SPM version](http://spmjs.io/badge/modulex-promise)](http://spmjs.io/package/modulex-promise)
 [![NPM downloads](http://img.shields.io/npm/dm/modulex-promise.svg)](https://npmjs.org/package/modulex-promise)
 [![Build Status](https://secure.travis-ci.org/kissyteam/promise.png?branch=master)](https://travis-ci.org/kissyteam/promise)
 [![Coverage Status](https://img.shields.io/coveralls/kissyteam/promise.svg)](https://coveralls.io/r/kissyteam/promise?branch=master)
 [![Dependency Status](https://gemnasium.com/kissyteam/promise.png)](https://gemnasium.com/kissyteam/promise)
 [![Bower version](https://badge.fury.io/bo/modulex-promise.svg)](http://badge.fury.io/bo/modulex-promise)
 [![node version](https://img.shields.io/badge/node.js-%3E=_0.10-green.svg?style=flat-square)](http://nodejs.org/download/)
+[![Sauce Test Status](https://saucelabs.com/buildstatus/modulex-promise)](https://saucelabs.com/u/modulex-promise)
 
-[![browser support](https://ci.testling.com/kissyteam/promise.png)](https://ci.testling.com/kissyteam/promise)
+[![Sauce Test Status](https://saucelabs.com/browser-matrix/modulex-promise.svg)](https://saucelabs.com/u/modulex-promise)
 
 ## example
 

@@ -101,4 +101,22 @@ gulp.task('build-standalone', ['build'], function () {
         .pipe(gulp.dest(path.resolve(build)));
 });
 
+gulp.task('saucelabs', function (done) {
+  require('saucelabs-runner')({
+    browsers: [
+      {browserName: 'chrome'},
+      {browserName: 'firefox'},
+      {browserName: 'internet explorer', version: 8},
+      {browserName: 'internet explorer', version: 9},
+      {browserName: 'internet explorer', version: 10},
+      {browserName: 'internet explorer', version: 11, platform: 'Windows 8.1'}
+    ]
+  }).fin(function () {
+    done();
+    setTimeout(function () {
+      process.exit(0);
+    }, 1000);
+  });
+});
+
 gulp.task('default', ['build','build-standalone']);
