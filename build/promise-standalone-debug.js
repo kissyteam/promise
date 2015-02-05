@@ -1,10 +1,6 @@
 var XPromise = (function(){ var module = {};
 
-/*
-Copyright 2014, modulex-promise@1.1.3
-MIT Licensed
-build time: Mon, 29 Dec 2014 10:16:57 GMT
-*/
+//! Copyright 2015, kissy-promise@1.1.3 MIT Licensed, build time: Thu, 05 Feb 2015 06:45:48 GMT 
 var __promise__;
 __promise__ = function (exports) {
   /*
